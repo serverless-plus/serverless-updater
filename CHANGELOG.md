@@ -1,9 +1,8 @@
 ## [1.0.2](https://github.com/serverless-plus/serverless-updater/compare/v1.0.1...v1.0.2) (2020-09-04)
 
-
 ### Bug Fixes
 
-* readme license ([f66a864](https://github.com/serverless-plus/serverless-updater/commit/f66a8640c2e922de7fa6e410d9c43abc7a5d67e8))
+- readme license ([f66a864](https://github.com/serverless-plus/serverless-updater/commit/f66a8640c2e922de7fa6e410d9c43abc7a5d67e8))
 
 ## [1.0.1](https://github.com/serverless-plus/serverless-updater/compare/v1.0.0...v1.0.1) (2020-09-04)
 
