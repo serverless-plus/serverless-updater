@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/serverless-plus/serverless-updater/compare/v1.0.2...v1.0.3) (2020-09-04)
+
+
+### Bug Fixes
+
+* remove unuse console ([484779a](https://github.com/serverless-plus/serverless-updater/commit/484779a59db29f78689c2a1537a49bcaf16c580e))
+
 ## [1.0.2](https://github.com/serverless-plus/serverless-updater/compare/v1.0.1...v1.0.2) (2020-09-04)
 
 ### Bug Fixes
