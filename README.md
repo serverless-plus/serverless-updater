@@ -59,4 +59,4 @@ Most of time, we just use `feat` and `fix`.
 
 ## License
 
-Copyright (c) 2019-present Tencent Cloud, Inc.
+Copyright (c) 2020 Serverless Plus
