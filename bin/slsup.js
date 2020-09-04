@@ -32,7 +32,6 @@ async function main() {
   program.parse(process.argv);
 
   const { component, path, source, multi, autoPush, autoPublish, forcePublish } = program;
-  console.log('forcePublish', forcePublish);
   let list = ['component'];
   if (multi) {
     list = component.split(',');
