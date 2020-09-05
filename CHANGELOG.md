@@ -1,9 +1,8 @@
 ## [1.0.4](https://github.com/serverless-plus/serverless-updater/compare/v1.0.3...v1.0.4) (2020-09-05)
 
-
 ### Bug Fixes
 
-* optimize deploy information ([8f583c4](https://github.com/serverless-plus/serverless-updater/commit/8f583c4e377b136583315c6ac8b38c1220831b08))
+- optimize deploy information ([8f583c4](https://github.com/serverless-plus/serverless-updater/commit/8f583c4e377b136583315c6ac8b38c1220831b08))
 
 ## [1.0.3](https://github.com/serverless-plus/serverless-updater/compare/v1.0.2...v1.0.3) (2020-09-04)
 

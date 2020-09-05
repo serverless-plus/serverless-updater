@@ -30,6 +30,8 @@ Options:
   -p, --path <path>                 path to component or parent directory for multi updating
   -s, --source <source>             source code directory name (default: "src")
   -m, --multi                       whether update multi components (default: false)
+  -f, --filter <matches>            Include only package names matching the given string, comma-delimited list, or /regex/.
+  -ct, --commit-type <type>         Commit type: fix,feat,chore (default: "fix")
   -aps, --auto-push                 whether auto push to github (default: false)
   -apb, --auto-publish              whether auto publish component (default: false)
   -fpb, --force-publish             whether force to publish component (default: false)
