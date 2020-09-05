@@ -19,6 +19,11 @@ async function main() {
     )
     .option('-s, --source <source>', 'source code directory name', 'src')
     .option('-m, --multi', 'whether update multi components', false)
+    .option(
+      '-f, --filter <matches>',
+      'Include only package names matching the given string, comma-delimited list, or /regex/.',
+    )
+    .option('-ct, --commit-type <type>', 'Commit type: fix,feat,chore', 'fix')
     .option('-aps, --auto-push', 'whether auto push to github', false)
     .option('-apb, --auto-publish', 'whether auto publish component', false)
     .option('-fpb, --force-publish', 'whether force to publish component', false);
@@ -31,7 +36,17 @@ async function main() {
 
   program.parse(process.argv);
 
-  const { component, path, source, multi, autoPush, autoPublish, forcePublish } = program;
+  const {
+    component,
+    path,
+    source,
+    multi,
+    filter,
+    autoPush,
+    autoPublish,
+    forcePublish,
+    commitType,
+  } = program;
   let list = ['component'];
   if (multi) {
     list = component.split(',');
@@ -41,9 +56,11 @@ async function main() {
     compPath: path,
     sourceDir: source,
     multi: multi,
+    depsFilter: filter,
     autoPush: autoPush,
     autoPublish: autoPublish,
     forcePublish: forcePublish,
+    commitType: commitType,
   });
 
   await up.run();

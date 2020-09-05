@@ -7,7 +7,17 @@ const semver = require('semver');
 const ora = require('ora');
 
 class Updater {
-  constructor({ list, multi, compPath, sourceDir, autoPublish, autoPush, forcePublish }) {
+  constructor({
+    list,
+    multi,
+    depsFilter,
+    compPath,
+    sourceDir,
+    autoPublish,
+    autoPush,
+    forcePublish,
+    commitType,
+  }) {
     // component list to update
     this.list = list;
     // whether to update multi components
@@ -27,8 +37,14 @@ class Updater {
 
     // current updating module
     this.currrentModule = null;
-    // current cwd
+    // current work cwd
     this.cwd = null;
+
+    // deps filter for ncu
+    this.depsFilter = depsFilter;
+
+    // commit type
+    this.commitType = commitType;
   }
 
   info(msg) {
@@ -43,7 +59,7 @@ class Updater {
 
   // sync git status
   async syncGitStatus(cwd = process.cwd()) {
-    this.info(`Syncing git status`);
+    this.info(`Syncing github code`);
     const gitOptions = { cwd: cwd };
     // 1. checkout master
     spawnSync('git', ['checkout master'], gitOptions);
@@ -52,23 +68,23 @@ class Updater {
   }
 
   // update component yaml and publish a new version
-  async updateComponentYaml(cwd = process.cwd()) {
-    const compYamlPath = `${cwd}/serverless.component.yml`;
-    const ymlConfig = yaml.safeLoad(fs.readFileSync(compYamlPath, 'utf8'));
+  async updateComponentYaml(ymlPath, ymlConfig) {
     const oldVersion = ymlConfig.version;
     ymlConfig.version = semver.inc(oldVersion, 'patch');
     this.info(`Updating serverless.component.yml version to ${ymlConfig.version}`);
-    fs.writeFileSync(compYamlPath, yaml.safeDump(ymlConfig), 'utf8');
+    fs.writeFileSync(ymlPath, yaml.safeDump(ymlConfig), 'utf8');
+
+    return `${ymlConfig.name}@${ymlConfig.version}`;
   }
 
   // publish component
-  async publishComponent(cwd = process.cwd()) {
-    this.info(`Publishing component`);
+  async publishComponent(cwd = process.cwd(), pubCompVersion) {
+    this.info(`Publishing component ${pubCompVersion}`);
     try {
       execSync('serverless registry publish --debug', {
         cwd: cwd,
       });
-      this.succeed(`Publish component successfully`);
+      this.succeed(`Publish component ${pubCompVersion} successfully`);
     } catch (e) {
       const errorOutput = e.stdout.toString();
       this.fail(errorOutput);
@@ -82,19 +98,19 @@ class Updater {
     let needUpdate = false;
     this.info(`Upgrading dependencies in package.json`);
     // 1. update package.json
-    const upgraded = await ncu.run({
+    const ncuOptions = {
       upgrade: true,
       jsonUpgraded: true,
       silent: true,
       cwd: sourcePath,
+      filter: this.depsFilter,
       packageFile: `${sourcePath}/package.json`,
-    });
+    };
+    const upgraded = await ncu.run(ncuOptions);
     if (Object.keys(upgraded).length > 0) {
       needUpdate = true;
-      let updateStr = '';
-      Object.entries(upgraded).forEach(([name, version]) => {
-        updateStr += `${name}@${version}`;
-      });
+      const updateItems = Object.entries(upgraded).map(([name, version]) => `${name}@${version}`);
+      const updateStr = updateItems.join(',');
       // 2. npm install latest deps
       this.info(`Updating dependencies: ${updateStr}`);
       this.info(`Installing latest dependencies...`);
@@ -112,28 +128,35 @@ class Updater {
       cwd: cwd,
     });
     spawnSync('git', ['add', `${cwd}/serverless.component.yml`], { cwd: cwd });
-    spawnSync('git', ['commit', '-m', 'fix: update deps'], { cwd: cwd });
+    spawnSync('git', ['commit', '-m', `${this.commitType}: update deps`], { cwd: cwd });
     if (this.autoPush) {
+      this.info(`Pushing latest code to github`);
       spawnSync('git', ['push', 'origin', 'master'], { cwd: cwd });
     }
   }
 
   async updateOne(cwd = process.cwd()) {
+    const compYamlPath = `${cwd}/serverless.component.yml`;
+    const ymlConfig = yaml.safeLoad(fs.readFileSync(compYamlPath, 'utf8'));
+
+    this.currrentModule = ymlConfig.name;
+
     this.info(`Updating`);
     // 1. sync git status
     await this.syncGitStatus(cwd);
     // 2. update npm deps
     const needUpdate = await this.updateDeps(cwd);
+    let pubCompVersion;
     if (needUpdate) {
       // 3. update serverless.component.yml
-      await this.updateComponentYaml(cwd);
+      pubCompVersion = await this.updateComponentYaml(compYamlPath, ymlConfig);
       // 4. commit git change
       await this.commitGit(cwd);
     }
     // 5. publish component
     // when need update and set autoPublish to true, or set forcePublish to true
     if ((needUpdate && this.autoPublish) || this.forcePublish) {
-      await this.publishComponent(cwd);
+      await this.publishComponent(cwd, pubCompVersion);
     }
     this.succeed(`Done`);
   }
@@ -150,7 +173,7 @@ class Updater {
           compPath = resolve(`${this.compPath}/${compName}`);
         }
         this.cwd = compPath;
-        this.currrentModule = compName;
+
         await this.updateOne(compPath);
       }
     } catch (e) {
